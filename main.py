@@ -1,12 +1,39 @@
 import pandas as pd
 from tkinter import filedialog, Button, Label, Tk, messagebox
 import BancoDeDados
+import calendar
 from datetime import datetime
 import re
 import os
 from unidecode import unidecode
 import PyPDF2
 cabecarioErro = "Verificar se na linha da planilha tem cliente/fornecedor, caso SIM cadastrar Cliente/Fornecedor em CliFor se NÃO cadastrar o historico no dePara!\n\nCaso o historico comece com data o lançamento irá para Cartão de credito\n\n"
+
+
+def is_valid_date_for_month(data, user_input):
+    # Dicionário para converter meses em nomes para números
+    months_map = {month: str(index).zfill(2) for index, month in enumerate(calendar.month_name) if month}
+    months_map.update({month: str(index).zfill(2) for index, month in enumerate(calendar.month_abbr) if month})
+
+    # Verificar se o user_input é número ou nome do mês
+    if user_input.isdigit():
+        month = str(int(user_input)).zfill(2)  # Converte para 06 se for 6 ou 06
+    else:
+        month = months_map.get(user_input.capitalize(), None)  # Verifica se é "junho", "Junho", etc.
+        if month is None:
+            return False  # Mês inválido
+
+    try:
+        # Tenta converter a data
+        parsed_date = pd.to_datetime(data, format='%d/%m/%Y', errors='raise')
+        # Verifica se o mês da data coincide com o mês do user_input
+        if parsed_date.strftime('%m') == month:
+            return True
+        else:
+            return False
+    except (ValueError, TypeError):
+        return False
+
 def ProcessamentoDeDados(arquivo):
     try:
         # Lendo o arquivo CSV
@@ -91,14 +118,18 @@ def ProcessamentoDeDados(arquivo):
                     Credito = ContaBanco
                     custo = custo
                     Historico = f"PAGAMENTO REF. {str(linha[DescricaoCol])}"
+                    if str(linha[CategoriaCol]) == 'Ferias':
+                        Debito = '662'
                 else:
                     Debito = ContaBanco
                     Credito = ContraPartida
                     Historico = f"RECEBIMENTO REF. {str(linha[DescricaoCol])}"
                     custo = custo
-                    if str(linha[CategoriaCol]) in ["Direcionado", "Doações PJ Recorrente", "Livre", "Pontuais", "Recorrente"]:
+                    if str(linha[CategoriaCol]) in ["Direcionado", "Doações PJ Recorrente", "Livre", "Pontuais", "Recorrente", "Eventos", "Campanhas"]:
+                        Credito = '10000'
                         HistoricoFaturamento = f"VALOR REF. {str(linha[DescricaoCol])}"
                         complemento = f"\n{Data};{Credito};407;{Valor};;{HistoricoFaturamento};1;;;"
+
 
             linha_formatada = unidecode(f"{Data};{Debito};{Credito};{Valor};;{Historico};1;;{custo};{custo}{complemento}").upper()
             linhas_erros = unidecode(f"Aviso: No Dia {Data} o lançamento com o historico: - ({str(linha[DescricaoCol])}) O lançamento irá para acerto!")
@@ -166,6 +197,9 @@ def gerarArquivo():
                 os.startfile(caminho_relatorio_txt)
         except Exception as e:
             print(f"Erro ao salvar arquivo TXT: {e}")
+
+        dados_extraidos = []
+        relatorio_separado = []
     else:
         print("Local de salvamento não selecionado")
 

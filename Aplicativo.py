@@ -89,7 +89,7 @@ def abrir_janela_CliFor():
     botao_cadastrar.grid(row=2, column=0, columnspan=2, pady=20)
 
 self = customtkinter.CTk()
-self.title("Conversão CSV para Rizoma v3")
+self.title("Conversão CSV para Rizoma v4")
 self.geometry("800x550")
 
 # set grid layout 1x2
@@ -127,7 +127,7 @@ textbox.insert("0.0", "Segue aplicativo para conversão do arquivo CSV para TXT 
                       "4. Esse TXT irá importar os lançamentos de:\n\n"
                       "- Lançamentos Itau\n"
                       "- Lançamentos conta Cora\n\n"
-                      "- Os lançamentos com categoria: Direcionado, Doações, PJ Recorrente, Livre, Pontuais e Recorrente\n\n"
+                      "- Os lançamentos com categoria: Direcionado, Doações, PJ Recorrente, Livre, Pontuais, Recorrente, Eventos e Campanhas\n\n"
                       "5. Ira ser feito um lançamento para faturamento na conta 407\n"
                       "6. Se atentar a linha cliente/fornecedores caso tenha dados ali, cadastrar como Cliente, se não cadastrar no dePara"
 
